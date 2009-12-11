@@ -1,6 +1,7 @@
       require 'chingu'
       require 'gosu'
       require 'opengl'
+      require 'nokogiri'
       
        require_all(File.join(ROOT, 'src')) 
       
