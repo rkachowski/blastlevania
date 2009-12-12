@@ -7,7 +7,7 @@ require 'nokogiri'
 class TmxTileMap
   include Chingu::NamedResource
   
-  TmxTileMap.autoload_dirs = [ File.join("media","maps"),"maps",ROOT]
+  TmxTileMap.autoload_dirs = [ File.join("media","maps"),"maps",ROOT,File.join("..","media","maps")]
   
   def self.autoload(name)
       (path = find_file(name)) ? load(path) : nil

@@ -48,7 +48,7 @@ class RoomEditor < Chingu::Window
   
   def sd; @lists.first.scroll_down;end
   def su; @lists.first.scroll_up;end
-  def lmb; @lists.first.get_entry_at [mouse_x,mouse_y];end
+  def lmb; set_map @lists.first.get_entry_at [mouse_x,mouse_y];end
   #
   #add a layer to the parallax
   def add_parallax_layer options
@@ -59,7 +59,10 @@ class RoomEditor < Chingu::Window
   #
   # add a tile map to the room
   def set_map mapname
+    return unless mapname
+    #puts File.join(map_path,mapname)
     @map = TmxTileMap[mapname]
+    puts @map
     @mapname = mapname
   end
   
@@ -71,8 +74,13 @@ class RoomEditor < Chingu::Window
   end
   
   def list_maps
-    $0 == 'test_room_editor.rb' ? path = File.join("..","media","maps") : path = File.join(ROOT,"media","maps") 
+    path = map_path
     maps = Dir.entries(path).delete_if{|e| e.split('.').last != "tmx"}    
+    add_list :entries => maps, :x =>510, :y=>40
+  end
+  
+  def map_path
+    File.join(ROOT,"media","maps") 
   end
   
   def add_list options
@@ -124,12 +132,12 @@ class RoomEditor < Chingu::Window
     def get_entry_at position
       return unless (@x..@x+WIDTH).member? position[0] and (@y..@y+HEIGHT).member? position[1]
       index = ((position[1] - @y.to_f)/SPACING).floor + @visible_range.begin
-      @entries[index].text if index < @visible_range.end
+      index < @visible_range.end and @entries[index] ? @entries[index].text  : nil
     end
     
     def draw
-      $window.draw_rect(@rect,0xffff0000,-100)
-      $window.fill_rect(@rect,0xddff0000,-50) if @backg
+      $window.draw_rect(@rect,0xffff0000,100)
+      $window.fill_rect(@rect,0xddff0000,50) if @backg
       
       @entries[@visible_range].each{|e| e.draw}
     end

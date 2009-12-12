@@ -18,7 +18,7 @@ class TileMap < Chingu::BasicGameObject
     @name = "noname"
     #initialize map
     @map = Array.new(@width){Array.new(@height){Tile.new(:x=>8)}}
-    @map.each_index{|j| @map[j].each_index{|i| @map[j][i].y = i *@map[j][i].image.height + @map[j][i].image.height/2 ; @map[j][i].x =j *@map[j][i].image.width + @map[j][i].image.width/2  } } # set initial positions of tiles
+    @map.each_index{|j| @map[j].each_index{|i| @map[j][i].y = i *Tile.const_get("TILE_HEIGHT") + Tile.const_get("TILE_HEIGHT")/2 ; @map[j][i].x =j *Tile.const_get("TILE_WIDTH") + Tile.const_get("TILE_WIDTH")/2  } } # set initial positions of tiles
     get_drawable_grid
     
     @tileset = nil
@@ -144,6 +144,7 @@ class TileMap < Chingu::BasicGameObject
       #load all tiles from tileset images
       sets.each do |s|
         sp = s[:spacing] || 0 #gosu doesnt handle spaced tiles :(
+        puts s[:image]
         s[:tiles] =Gosu::Image.load_tiles($window,TileSet.find(s[:image]),Tile.const_get('TILE_WIDTH'),Tile.const_get('TILE_HEIGHT'),true)
       end
       
@@ -174,7 +175,6 @@ class TileMap < Chingu::BasicGameObject
     attr_accessor :solid, :x,:y,:image, :name, :type, :tileset
     def initialize options
       @name = options[:name] || "t_default.png"
-      @image = Gosu::Image[@name].retrofy
       @solid = true
       @x = 0
       @y = 0
