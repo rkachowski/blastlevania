@@ -200,7 +200,7 @@ class TileMap < Chingu::BasicGameObject
     end
     
     def draw
-      @image.draw(@x-TILE_WIDTH/2,@y-TILE_HEIGHT/2,0) if @image
+      @image.draw(@x-TILE_WIDTH/2,@y-TILE_HEIGHT/2,5) if @image
     end
     
     def t

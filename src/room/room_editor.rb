@@ -6,11 +6,11 @@ class RoomEditor < Chingu::Window
     super(640,480,false)
     self.input = {:esc =>:exit, :down => :sd,:up =>:su,:left_mouse_button => :left_mouse_button ,:q =>:z_up,:a=>:z_down,:w=>:damp_up,
     :s=>:damp_down,:e=>:color_up,:d=>:color_down}
-    self.caption = "blastlevania room editor v0.0789"
+    self.caption = "blastlevania room editor v0.0989"
     
-    @parallax = Chingu::Parallax.create(:rotation_center => :top_left,:z=>-1)
+    @parallax = Chingu::Parallax.new(:rotation_center => :top_left,:z=>0)
     @parallaxlayers = []
-    @p_options = {:z=>0,:damping =>1,:color =>0xffffffff}
+    @p_options = {:z=>-5,:damping =>1,:color =>0xffffffff}
     
     #tile map
     
@@ -70,7 +70,6 @@ class RoomEditor < Chingu::Window
   def add_parallax_layer options
     @parallax << {:image => options[:image],:damping => options[:damping],:z => options[:z]}
     @parallaxlayers << options
-    puts @parallaxlayers
   end
   
   #
@@ -125,7 +124,7 @@ class RoomEditor < Chingu::Window
   
   def draw
     
-    
+    super
     @lists[:active].draw
     
     case @lists[:active]
@@ -138,8 +137,11 @@ class RoomEditor < Chingu::Window
         @p_options_labels.each{|t| t.draw}
         
       when @lists['maps']
-      @map.draw if @map
+      
     end
+    @parallax.draw
+    @map.draw if @map
+    
     
     #draw buttons
     draw_rect(@p_button,0xffff0000,500)
@@ -147,7 +149,7 @@ class RoomEditor < Chingu::Window
    #draw mouse
     fill_rect(Chingu::Rect.new(mouse_x-1,mouse_y-1,3,3),0xffff0000,500)
     
-    super
+    
   end
   #
   # create a list for parallax layers
