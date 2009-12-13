@@ -6,7 +6,7 @@ class RoomEditor < Chingu::Window
     super(640,480,false)
     self.input = {:esc =>:exit, :down => :sd,:up =>:su,:left_mouse_button => :left_mouse_button ,:q =>:z_up,:a=>:z_down,:w=>:damp_up,
     :s=>:damp_down,:e=>:color_up,:d=>:color_down}
-    self.caption = "blastlevania room editor v0.0989"
+    
     
     @parallax = Chingu::Parallax.new(:rotation_center => :top_left,:z=>0)
     @parallaxlayers = []
@@ -22,14 +22,14 @@ class RoomEditor < Chingu::Window
     add_buttons
   end
   
-  def sd; @lists[:active].scroll_down;end
-  def su; @lists[:active].scroll_up;end
-  def z_up;@p_options[:z]+=1;end
-  def z_down;@p_options[:z]-=1;end
-  def damp_up;@p_options[:damping]+=1;end
-  def damp_down;@p_options[:damping]-=1;end
-  def color_up;@p_options[:color]+=0x00111111 if @p_options[:color] < 0xffffffff;end
-  def color_down;@p_options[:color]-=0x00111111 if @p_options[:color] > 0xff000000;end
+  def sd; @lists[:active].scroll_down; update_labels;end
+  def su; @lists[:active].scroll_up;update_labels;end
+  def z_up;@p_options[:z]+=1;update_labels;end
+  def z_down;@p_options[:z]-=1;update_labels;end
+  def damp_up;@p_options[:damping]+=1;update_labels;end
+  def damp_down;@p_options[:damping]-=1;update_labels;end
+  def color_up;@p_options[:color]+=0x00111111 if @p_options[:color] < 0xffffffff;update_labels;end
+  def color_down;@p_options[:color]-=0x00111111 if @p_options[:color] > 0xff000000;update_labels;end
   
   #
   # add buttons to switch edit modes
@@ -50,7 +50,7 @@ class RoomEditor < Chingu::Window
         
         if not @p_selection
           @p_image = @lists[:active].get_entry_at [mouse_x,mouse_y]
-          @p_selection = Gosu::Image[@p_image].retrofy if @p_image
+          @p_selection = Gosu::Image[@p_image] if @p_image
           puts @p_selection
         else
           add_parallax_layer :image=>@p_image,:damping=>@p_options[:damping],:z=>@p_options[:z], :color=>@p_options[:color]
@@ -87,16 +87,18 @@ class RoomEditor < Chingu::Window
     if mouse_x >= $window.width-SCROLL_BUFFER
       if @map and @map.tile_exists_at? [ $window.width+1,0] 
         @map.move [-4,0] 
-        @parallax.camera_x -=4
+        @parallax.camera_x-=4
       end
       
     elsif mouse_x <= 0+SCROLL_BUFFER
       if @map and @map.tile_exists_at? [ 0,0] 
         @map.move [4,0] 
-        @parallax.camera_x +=4
+        @parallax.camera_x+=4
       end
       
     end
+    
+    @parallax.update
     ##TODO allow scrolling on y if possible   
   end
   
@@ -109,7 +111,13 @@ class RoomEditor < Chingu::Window
       
       when @lists['parallax']
         
-        #update label values
+    end
+    
+    self.caption = "blastlevania room editor v0.0989 fps - #{self.fps}"
+  end
+
+  def update_labels
+    #update label values
         values = @p_options.values
         values[2] = "0x%x"%values[2]
         @p_options_labels.each_with_index do |l,i|
@@ -117,10 +125,7 @@ class RoomEditor < Chingu::Window
             l.text = values[((i+1)/2)-1]
           end
         end
-    end
-    
   end
-
   
   def draw
     
