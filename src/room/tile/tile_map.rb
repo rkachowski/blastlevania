@@ -115,6 +115,15 @@ class TileMap < Chingu::BasicGameObject
   end
   
   #
+  #given a set of coordinates, return whether there is a tile there.
+  #used for scrolling
+  #(empty tiles count as tiles)
+  def tile_exists_at? position
+    c = get_map_cell position
+    (0..@width).member? c[0] and (0..@height).member? c[1]
+  end
+  
+  #
   # returns the tile at this position, used for collision response
   def get_tile_at position
     c = get_map_cell position
