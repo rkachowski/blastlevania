@@ -1,5 +1,5 @@
 require 'chingu'
-require 'gosu'
+#require 'gosu'
 require 'opengl'
 require 'nokogiri'
 
@@ -10,4 +10,5 @@ require_all(File.join(ROOT, 'src'))
 
 j.list_maps
 j.list_p_layers
+j.list_objects
 j.show

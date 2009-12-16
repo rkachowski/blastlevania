@@ -2,7 +2,7 @@
 # An arrangement of tiles
 class TileMap < Chingu::BasicGameObject
   attr_accessor :map,:name,:tids
-    
+  attr_reader :x,:y
   def initialize options
     @size = options[:size]
     @width = @size[0]
@@ -120,7 +120,7 @@ class TileMap < Chingu::BasicGameObject
   #(empty tiles count as tiles)
   def tile_exists_at? position
     c = get_map_cell position
-    (0..@width).member? c[0] and (0..@height).member? c[1]
+    c[0] >=0 and c[0] <@width-1 and c[1] >=0 and c[1] <=@height-1
   end
   
   #
@@ -153,7 +153,6 @@ class TileMap < Chingu::BasicGameObject
       #load all tiles from tileset images
       sets.each do |s|
         sp = s[:spacing] || 0 #gosu doesnt handle spaced tiles :(
-        puts s[:image]
         s[:tiles] =Gosu::Image.load_tiles($window,TileSet.find(s[:image]),Tile.const_get('TILE_WIDTH'),Tile.const_get('TILE_HEIGHT'),true)
       end
       

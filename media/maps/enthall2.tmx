@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map SYSTEM "http://mapeditor.org/dtd/1.0/map.dtd">
+<map version="1.0" orientation="orthogonal" width="280" height="30" tilewidth="16" tileheight="16">
+ <tileset name="Untitled" firstgid="1" tilewidth="16" tileheight="16">
+  <image source="kren.png"/>
+ </tileset>
+ <tileset name="Untitled" firstgid="438" tilewidth="16" tileheight="16">
+  <image source="tile15_16x16_crane_red.png"/>
+ </tileset>
+ <tileset name="Untitled" firstgid="454" tilewidth="16" tileheight="16">
+  <image source="tileset2.png"/>
+ </tileset>
+ <layer name="Layer 2" width="280" height="30">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAAO3duQ3AIAAEQfoPXbEbwI+AzWaka2HTGwMAAICTrh8DWKEvQGXWEn0BTnjqiL4Au94aoi/Ajq9+6AuwSl+Air4AFX0BKvoCVPQFqOgLUNEXoKIvQEVfgIq+ABV9ASr6AlT0BajoC1DRF6CiL0BFX4CK/wAAAACAuRtrUpGNQIMAAA==
+  </data>
+ </layer>
+ <layer name="Layer 1" width="280" height="30">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAAO3UPQrCQBSF0cn+uyzGX1SELMykCMQQRcTLMHgenOZVt/r6UkoPAADAz3xytTcCbVrepSvlPjp2z//aG4E2zTe15TwaRtdVY2pvBNo03bItw0Zjam8E2rTVlnVjam8E2nR70ZbZSV+AL+kLkKIvQIq+ACn6AqToC5CiL0CKvgAp+gKk6AuQoi9Air4AKfoCpOgLkKIvQIq+ACn6AqToC5CyH/txeGOnLwAAAMCfegB544b3QIMAAA==
+  </data>
+ </layer>
+ <layer name="Layer 0" width="280" height="30">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAAO3dsQkAIAxFweAWbuH+04m9VgmIcgdvhZDu94jokiRJDzUkqaDdfQHIOv0vAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAwL/WRkmTpGS3tyIlSZIqmmyPUGxAgwAA
+  </data>
+ </layer>
+</map>

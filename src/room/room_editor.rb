@@ -1,27 +1,41 @@
 
 class RoomEditor < Chingu::Window
-  
+  include RoomObjects
   SCROLL_BUFFER = 15
+  SCROLL_SPEED = 4
   def initialize
     super(640,480,false)
-    self.input = {:esc =>:exit, :down => :sd,:up =>:su,:left_mouse_button => :left_mouse_button ,:q =>:z_up,:a=>:z_down,:w=>:damp_up,
-    :s=>:damp_down,:e=>:color_up,:d=>:color_down}
+    keys = %w[ a b c d e f g h i j k l m n o p q r s t u v w x y backspace]
+    keys.map!{|e| e.to_sym}
     
-    
+    self.input = {:esc =>:exit, :down => :sd,:up =>:su,:left_mouse_button => :left_mouse_button ,:right_mouse_button => :right_mouse_button ,keys => :keys}
+        
     @parallax = Chingu::Parallax.new(:rotation_center => :top_left,:z=>0)
     @parallaxlayers = []
     @p_options = {:z=>-5,:damping =>1,:color =>0xffffffff}
-    
-    #tile map
-    
-    @triggers
-    @objects
+     
+    @object_info = []
+    @objects = []
     
     @lists = {}
+    
+    @fields = []
     extend_image_paths
     add_buttons
+    
+    
+    puts keys
+    RoomObjects::RoomObject.debug
   end
   
+  def keys
+    #if a field is selected
+      #send the input to the field
+    #else do the indivudual key function
+      
+  end
+  
+  ##parallax option changing
   def sd; @lists[:active].scroll_down; update_labels;end
   def su; @lists[:active].scroll_up;update_labels;end
   def z_up;@p_options[:z]+=1;update_labels;end
@@ -38,12 +52,21 @@ class RoomEditor < Chingu::Window
     Chingu::Text.create(:text=>"p",:x=>513,:y=>5,:factor_x =>1.5)
     @m_button = Chingu::Rect.new(540,5,20,20)
     Chingu::Text.create(:text=>"m",:x=>540,:y=>5,:factor_x =>1.5)
+    @o_button = Chingu::Rect.new(570,5,20,20)
+    Chingu::Text.create(:text=>"o",:x=>575,:y=>5,:factor_x =>1.5)
+    @save_button = Chingu::Rect.new(5,5,45,20)
+    Chingu::Text.create(:text=>"save",:x=>5,:y=>5,:factor_x =>1.5)
+    @load_button = Chingu::Rect.new(60,5,45,20)
+    Chingu::Text.create(:text=>"load",:x=>65,:y=>5,:factor_x =>1.5)
   end
   
+  #
+  #left mouse click is to select and position things
   def left_mouse_button 
     #check for button click
-    @lists[:active] = @lists['maps'] if @m_button.collide_point? mouse_x, mouse_y
-    @lists[:active] = @lists['parallax'] if @p_button.collide_point? mouse_x, mouse_y
+    change_list @lists['maps'] if @m_button.collide_point? mouse_x, mouse_y
+    change_list @lists['parallax'] if @p_button.collide_point? mouse_x, mouse_y
+    change_list @lists['objects'] if @o_button.collide_point? mouse_x, mouse_y
       
     case @lists[:active]
       when @lists['parallax']
@@ -51,7 +74,7 @@ class RoomEditor < Chingu::Window
         if not @p_selection
           @p_image = @lists[:active].get_entry_at [mouse_x,mouse_y]
           @p_selection = Gosu::Image[@p_image] if @p_image
-          puts @p_selection
+          
         else
           add_parallax_layer :image=>@p_image,:damping=>@p_options[:damping],:z=>@p_options[:z], :color=>@p_options[:color]
           @p_selection = nil
@@ -62,38 +85,80 @@ class RoomEditor < Chingu::Window
         
         set_map @lists[:active].get_entry_at [mouse_x,mouse_y]
         
+      when @lists['objects']
+        if not @ob_selection
+          @ob_selection = @lists[:active].get_entry_at [mouse_x,mouse_y]
+          @ob_image = Gosu::Image["#{@ob_selection}.png"] if @ob_selection
+        else
+          add_object @ob_selection
+          @ob_selection = nil
+          @ob_image = nil
+        end
+        
     end
+  end
+    
+  
+  #
+  #right mouse click is to cancel and delete things
+  def right_mouse_button
+    case @lists[:active]
+      when @lists['parallax']
+        @p_selection = nil
+        @p_image = nil
+      when @lists['maps']
+      when @lists['objects']
+        @ob_selection = nil
+        @ob_image = nil
+    end
+    
+  end
+  
+  def change_list new_list
+    @ob_selection = nil
+    @ob_image = nil
+    @p_selection = nil
+    @p_image = nil
+    @lists[:active] = new_list
   end
   
   #
   #add a layer to the parallax
   def add_parallax_layer options
-    @parallax << {:image => options[:image],:damping => options[:damping],:z => options[:z]}
+    @parallax << {:image => options[:image],:damping => options[:damping],:zorder => options[:z]}
     @parallaxlayers << options
+  end
+  #
+  # add an object to the room
+  def add_object object
+    return unless @map
+    puts new_o = eval(object).new(:x =>mouse_x,:y=>mouse_y)
+    @object_info << {:type =>eval(object),:x=>mouse_x - @map.x,:y =>mouse_y-@map.y}
+    @objects << new_o
   end
   
   #
   # add a tile map to the room
   def set_map mapname
     return unless mapname
-    #puts File.join(map_path,mapname)
     @map = nil
     @map = TmxTileMap[mapname]
-    puts @map
     @mapname = mapname
   end
   
   def scroll_room
     if mouse_x >= $window.width-SCROLL_BUFFER
       if @map and @map.tile_exists_at? [ $window.width+1,0] 
-        @map.move [-4,0] 
-        @parallax.camera_x-=4
+        @map.move [-SCROLL_SPEED,0] 
+        @parallax.camera_x+=SCROLL_SPEED
+        @objects.each{|o| o.move [-SCROLL_SPEED,0]  }
       end
       
     elsif mouse_x <= 0+SCROLL_BUFFER
       if @map and @map.tile_exists_at? [ 0,0] 
-        @map.move [4,0] 
-        @parallax.camera_x+=4
+        @map.move [SCROLL_SPEED,0] 
+        @parallax.camera_x-=SCROLL_SPEED
+        @objects.each{|o| o.move [SCROLL_SPEED,0]  }
       end
       
     end
@@ -105,14 +170,7 @@ class RoomEditor < Chingu::Window
   def update
     super
     scroll_room
-    
-    case @lists[:active]
-      when @lists['maps']
-      
-      when @lists['parallax']
-        
-    end
-    
+     
     self.caption = "blastlevania room editor v0.0989 fps - #{self.fps}"
   end
 
@@ -128,7 +186,6 @@ class RoomEditor < Chingu::Window
   end
   
   def draw
-    
     super
     @lists[:active].draw
     
@@ -143,18 +200,21 @@ class RoomEditor < Chingu::Window
         
       when @lists['maps']
       
+      when @lists['objects']
+        @ob_image.draw(mouse_x-@ob_image.width/2,mouse_y-@ob_image.height/2,0,1,1,@p_options[:color]) if @ob_image
     end
     @parallax.draw
     @map.draw if @map
-    
-    
+    @objects.each{|e| e.draw if e}
     #draw buttons
     draw_rect(@p_button,0xffff0000,500)
     draw_rect(@m_button,0xffff0000,500)
+    draw_rect(@o_button,0xffff0000,500)
+    draw_rect(@save_button,0xffff0000,500)
+    draw_rect(@load_button,0xffff0000,500)
+    
    #draw mouse
     fill_rect(Chingu::Rect.new(mouse_x-1,mouse_y-1,3,3),0xffff0000,500)
-    
-    
   end
   #
   # create a list for parallax layers
@@ -172,7 +232,7 @@ class RoomEditor < Chingu::Window
       unless k ==:color
       @p_options_labels<<Chingu::Text.new(:text=>v,:x=>@lists[:active].x + spac*30,:y=>@lists[:active].y+List.const_get('HEIGHT')+15)
       else
-        @p_options_labels<< Chingu::Text.new(:text=>"%x"%v,:x=>@lists[:active].x + i*32,:y=>@lists[:active].y+List.const_get('HEIGHT')+15)
+        @p_options_labels<< Chingu::Text.new(:text=>"0x%x"%v,:x=>@lists[:active].x + i*32,:y=>@lists[:active].y+List.const_get('HEIGHT')+15)
       end
       spac = k.size
       i+=1
@@ -184,6 +244,16 @@ class RoomEditor < Chingu::Window
     path = map_path
     maps = Dir.entries(path).delete_if{|e| e.split('.').last != "tmx"}    
     add_list :entries => maps, :x =>510, :y=>40, :name =>"maps"
+  end
+  
+  def list_objects 
+    path = object_path
+    objects = Dir.entries(path).delete_if{|e| e.split('.').last != "png"}.map!{|e| e.chomp('.png')}    
+    add_list :entries => objects, :x =>510, :y=>40, :name =>"objects"
+  end
+  
+  def object_path
+    File.join(ROOT,"media","roomobjects") 
   end
   
   def map_path
@@ -207,6 +277,39 @@ class RoomEditor < Chingu::Window
   # write the room info to a file 'filename'
   def write_to_file filename
     f = File.new(filename)
+  end
+  
+  class TextField < Chingu::Text
+    attr_accessor :selected
+    
+    def initialize options
+      super
+      @selected = false
+      @timer = 50
+      @rect = Chingu::Rect.new(@x,@y,10,10)
+    end
+    
+    def mouse_over?
+      s = @rect.collide_point? $window.mouse_x, $window.mouse_y
+      @selected = s
+      s
+    end
+    
+    def add_char char
+      @text << char
+      @rect.width += 5
+    end
+    
+    def remove_char 
+      @text.chop!
+      @rect.width -= 5
+    end
+    
+    def draw
+      super
+      @selected? $window.fill_rect(@rect, 0xaaff0000,500) : $window.draw_rect(@rect, 0xffff0000,500)
+    end
+     
   end
   
   #
