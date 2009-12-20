@@ -2,7 +2,7 @@ require 'chingu'
 #require 'gosu'
 require 'opengl'
 require 'nokogiri'
-
+include Chingu
 require_all(File.join(ROOT, 'src')) 
 
  j= RoomEditor.new

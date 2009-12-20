@@ -18,10 +18,11 @@ module RoomObjects
       @name = self.class.to_s.split('::').last
       @label = Chingu::Text.new(:text => @name,:x => @x,:y=>@y)
       @label.x = @x-@label.width/2
+      
       @image = Gosu::Image["#{self.class.to_s.split('::').last}.png"].retrofy
       
     end
-    
+         
     def move direction
       @x += direction[0]
       @y += direction[1]

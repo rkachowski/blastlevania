@@ -5,11 +5,12 @@ require 'nokogiri'
 # load a tmx file (produced by Tiled map editor mapeditor.org )
 # return a TileMap and TileSets that match tmx info
 class TmxTileMap
-  include Chingu::NamedResource
+  include NamedResource
   
   TmxTileMap.autoload_dirs = [ File.join("media","maps"),"maps",ROOT,File.join("..","media","maps")]
   
   def self.autoload(name)
+    @name = name
       (path = find_file(name)) ? load(path) : nil
   end
     
@@ -23,6 +24,7 @@ class TmxTileMap
     map = create_map tmx_info[:global]
     #fill map with tile data
     fill_map map, tmx_info[:layers], tmx_info[:tilesets]
+    map.name = @name
     map
   end
     

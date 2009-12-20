@@ -5,46 +5,30 @@ class RoomEditor < Chingu::Window
   SCROLL_SPEED = 4
   def initialize
     super(640,480,false)
-    keys = %w[ a b c d e f g h i j k l m n o p q r s t u v w x y backspace]
+    keys = %w[ a b c d e f g h i j k l m n o p q r s t u v w x y z backspace space ]
     keys.map!{|e| e.to_sym}
     
     self.input = {:esc =>:exit, :down => :sd,:up =>:su,:left_mouse_button => :left_mouse_button ,:right_mouse_button => :right_mouse_button ,keys => :keys}
         
-    @parallax = Chingu::Parallax.new(:rotation_center => :top_left,:z=>0)
+    @parallax = Parallax.new(:rotation_center => :top_left,:z=>0)
     @parallaxlayers = []
     @p_options = {:z=>-5,:damping =>1,:color =>0xffffffff}
      
     @object_info = []
     @objects = []
-    
+    @v = rand(0.01)
     @lists = {}
     
-    @fields = []
+    @fields = {}
     extend_image_paths
     add_buttons
     
+    @fields[:roomname] = TextField.create(:x=>150,:y=>5, :text =>"roomname")
     
-    puts keys
     RoomObjects::RoomObject.debug
   end
   
-  def keys
-    #if a field is selected
-      #send the input to the field
-    #else do the indivudual key function
-      
-  end
-  
-  ##parallax option changing
-  def sd; @lists[:active].scroll_down; update_labels;end
-  def su; @lists[:active].scroll_up;update_labels;end
-  def z_up;@p_options[:z]+=1;update_labels;end
-  def z_down;@p_options[:z]-=1;update_labels;end
-  def damp_up;@p_options[:damping]+=1;update_labels;end
-  def damp_down;@p_options[:damping]-=1;update_labels;end
-  def color_up;@p_options[:color]+=0x00111111 if @p_options[:color] < 0xffffffff;update_labels;end
-  def color_down;@p_options[:color]-=0x00111111 if @p_options[:color] > 0xff000000;update_labels;end
-  
+    
   #
   # add buttons to switch edit modes
   def add_buttons
@@ -67,7 +51,10 @@ class RoomEditor < Chingu::Window
     change_list @lists['maps'] if @m_button.collide_point? mouse_x, mouse_y
     change_list @lists['parallax'] if @p_button.collide_point? mouse_x, mouse_y
     change_list @lists['objects'] if @o_button.collide_point? mouse_x, mouse_y
-      
+    write_to_file  if @save_button.collide_point? mouse_x, mouse_y
+    
+    @fields.each_value{|f| f.mouse_over?}
+    
     case @lists[:active]
       when @lists['parallax']
         
@@ -125,7 +112,7 @@ class RoomEditor < Chingu::Window
   #
   #add a layer to the parallax
   def add_parallax_layer options
-    @parallax << {:image => options[:image],:damping => options[:damping],:zorder => options[:z]}
+    @parallax << {:image => options[:image],:damping => options[:damping],:zorder => options[:z],:color => options[:color]}
     @parallaxlayers << options
   end
   #
@@ -170,8 +157,9 @@ class RoomEditor < Chingu::Window
   def update
     super
     scroll_room
+    @fields.each_value{|f| f.update}
      
-    self.caption = "blastlevania room editor v0.0989 fps - #{self.fps}"
+    self.caption = "blastlevania room editor - version #{@v} fps - #{self.fps}"
   end
 
   def update_labels
@@ -273,12 +261,71 @@ class RoomEditor < Chingu::Window
     @lists[:active] = l
   end
   
-  #
-  # write the room info to a file 'filename'
-  def write_to_file filename
-    f = File.new(filename)
+  ##keyboard input handling
+  def keys
+    #if a letter key (or space) was pressed
+    if (32..122).member? @downbutton
+      active_field = false
+      @fields.each_value{|f| active_field = f if f.selected}
+      if active_field
+        active_field.add_char @downbutton.chr
+      else
+        case @downbutton
+          when 113
+          z_up
+          when 97
+          z_down
+          when 119
+          damp_up
+          when 115
+          damp_down
+          when 101
+          color_up
+          when 100 
+          color_down
+        end
+      end
+      
+    elsif @downbutton == 65288 #backspace
+      active_field = false
+      @fields.each_value{|f| active_field = f if f.selected}
+      active_field.remove_char if active_field
+    end
+    
   end
   
+  #parallax option changing
+  def sd; @lists[:active].scroll_down; update_labels;end
+  def su; @lists[:active].scroll_up;update_labels;end
+  def z_up;@p_options[:z]+=1;update_labels;end
+  def z_down;@p_options[:z]-=1;update_labels;end
+  def damp_up;@p_options[:damping]+=1;update_labels;end
+  def damp_down;@p_options[:damping]-=1;update_labels;end
+  def color_up;@p_options[:color]+=0x00111111 if @p_options[:color] < 0xffffffff;update_labels;end
+  def color_down;@p_options[:color]-=0x00111111 if @p_options[:color] > 0xff000000;update_labels;end
+  
+  
+  #
+  # write the room info to a file 'filename'
+  def write_to_file
+    name = File.join(map_path ,@fields[:roomname].text+".bsm")
+    f = File.new(name,"w+")
+    
+    b = Nokogiri::XML::Builder.new{ |b|
+      b.room(:roomname => @fields[:roomname].text){|b|
+        b.map(:file=>@map.name)
+        b.parallax{|b| 
+          @parallaxlayers.each{|pl| b.layer(:image=>pl[:image],:damping=>pl[:damping],:zorder=>pl[:z],:color=>pl[:color])}
+          }
+        b.objects{|b| @object_info.each{|o| b.object(:type=>o[:type],:x=>o[:x],:y=>o[:y],:name =>o[:name])} }
+      }
+    }
+    
+    f << b.to_xml
+  end
+  
+  #
+  # A text item that can be written in
   class TextField < Chingu::Text
     attr_accessor :selected
     
@@ -286,7 +333,8 @@ class RoomEditor < Chingu::Window
       super
       @selected = false
       @timer = 50
-      @rect = Chingu::Rect.new(@x,@y,10,10)
+      @rect = Chingu::Rect.new(@x,@y,10,15)
+      @rect.w = width
     end
     
     def mouse_over?
@@ -296,13 +344,15 @@ class RoomEditor < Chingu::Window
     end
     
     def add_char char
-      @text << char
-      @rect.width += 5
+      @text += char
+      @rect.w = width+1
+      self.text=@text
     end
     
     def remove_char 
       @text.chop!
-      @rect.width -= 5
+      @rect.w = width+1
+      self.text=@text
     end
     
     def draw
