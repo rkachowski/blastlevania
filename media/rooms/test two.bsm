@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<room roomname="test two">
+  <map file="enthall2.tmx"/>
+  <parallax>
+    <layer image="p_tree1.png" damping="1" z="-6" color="4294967295"/>
+    <layer image="p_enthall2.png" damping="1" z="-5" color="4294967295"/>
+  </parallax>
+  <objects>
+    <object type="RoomObjects::Lamp1" x="67.0" y="194.0"/>
+    <object type="RoomObjects::Lamp1" x="207.0" y="94.0"/>
+    <object type="RoomObjects::Lamp1" x="220.0" y="288.0"/>
+    <object type="RoomObjects::Lamp1" x="465.0" y="103.0"/>
+    <object type="RoomObjects::Lamp1" x="461.0" y="272.0"/>
+    <object type="RoomObjects::Lamp1" x="561.0" y="174.0"/>
+    <object type="RoomObjects::Lamp1" x="4388.0" y="150.0"/>
+    <object type="RoomObjects::Entrance" x="4436.0" y="343.0"/>
+  </objects>
+</room>

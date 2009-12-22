@@ -247,7 +247,9 @@ class RoomEditor < Chingu::Window
   def map_path
     File.join(ROOT,"media","maps") 
   end
-  
+  def room_path
+    File.join(ROOT,"media","rooms") 
+  end
   def p_path
     File.join(ROOT,"media","maps","parallax") 
   end
@@ -308,7 +310,7 @@ class RoomEditor < Chingu::Window
   #
   # write the room info to a file 'filename'
   def write_to_file
-    name = File.join(map_path ,@fields[:roomname].text+".bsm")
+    name = File.join(room_path ,@fields[:roomname].text+".bsm")
     f = File.new(name,"w+")
     
     b = Nokogiri::XML::Builder.new{ |b|
@@ -322,6 +324,29 @@ class RoomEditor < Chingu::Window
     }
     
     f << b.to_xml
+    Message.create(:text =>"saved #{@fields[:roomname].text+".bsm"}!")
+  end
+  
+  #
+  # A text item that fades out over time and removes it's self when faded
+  class Message < Chingu::Text
+    def initialize options
+      options.merge!({:size=>32,:x=>200,:y=>200})
+      super
+    end
+    
+    def update
+      super
+      tick
+    end
+    
+    def tick
+      self.alpha -= 5
+      if self.alpha <=0
+        self.destroy
+      end
+    end
+    
   end
   
   #

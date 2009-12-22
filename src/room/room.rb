@@ -3,6 +3,7 @@
 # A room contains a tilemap, objects and a parallax 
 class Room < Chingu::BasicGameObject
   include NamedResource
+  attr_reader :map
   Room.autoload_dirs = [ File.join("media","rooms"),File.join(ROOT,"media","rooms")]
   
   def self.autoload(name)
@@ -70,5 +71,6 @@ class Room < Chingu::BasicGameObject
   def update
     super
     @objects.each{|o| o.update}
+    @parallax.update
   end
 end

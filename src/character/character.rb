@@ -52,3 +52,4 @@ class Character < Chingu::GameObject
     @behaviours << b if b.kind_of? Behaviour
   end
 end
+
