@@ -81,7 +81,7 @@ class TileCollisionResponse < Behaviour
     c_points =[ [@character.x,@character.bb.t],[@character.x,@character.bb.b],[@character.bb.l,@character.y],[@character.bb.r,@character.y] ]
     c_points.map!{|p| p =@character.map.solid_point?(p) }
     
-    $window.fill_rect(Chingu::Rect.new(@character.x-1,@character.y-1,3,3),0xffffffff,500)
+    #$window.fill_rect(Chingu::Rect.new(@character.x-1,@character.y-1,3,3),0xffffffff,500)
     
     c_points.each_with_index do |c,i|
       if c
@@ -106,7 +106,21 @@ class TileCollisionResponse < Behaviour
   end
   
 end
-
-
-
-
+#
+# a standard behaviour that causes characters to fall due to gravity
+class FallByGravity < Behaviour
+  def initialize options
+    super
+    @speed =0
+  end
+  
+  def update
+    if @character.map.solid_point?([@character.x,@character.bb.b])
+      @speed = 0
+      return 
+    end
+    @speed+=0.3
+    @character.y += @speed
+  end
+  
+end

@@ -1,21 +1,33 @@
 class Character < Chingu::GameObject
   has_trait :collision_detection
-  has_trait :bounding_box, :scale => 0.8, :debug =>true
-  attr_reader :map, :speed
+  has_trait :bounding_box, :scale => 1, :debug =>true
+  attr_reader :map, :speed, :weight
   def initialize options
     super
-    @map = options[:tilemap]
+    
     @behaviours = [] #sequential behaviours
     @std_behaviours =[] #parallel behaviours that are always run
     @speed = 1
-    #
-    # debug/dev crap
-    add_std_behaviour TileCollisionResponse, {}
+    @facing_right = true
   end
   
   def move position
     @x += position[0]*@speed
     @y += position[1]*@speed
+    on_move position
+  end
+  
+  def flip
+    @facing_right = !@facing_right
+    @factor_x = -@factor_x
+  end
+  
+  def on_move position
+    if position[0] > 0 and !@facing_right
+      flip
+    elsif position[0] < 0 and @facing_right
+      flip
+    end
   end
   
   def update
@@ -23,6 +35,12 @@ class Character < Chingu::GameObject
     update_behaviours
   end
    
+ def draw
+   @image.draw_rot(@x, @y, @zorder, @angle, @center_x, @center_y, @factor_x, @factor_y, @color, @mode) if @visible
+ end
+   
+
+
   protected
   #
   # update the behaviours -
@@ -53,3 +71,15 @@ class Character < Chingu::GameObject
   end
 end
 
+class TileCharacter < Character
+  def initialize options
+    super
+    @map = options[:tilemap]
+    fail("no map parameter given to #{self.class.to_s} construction") unless @map
+    @weight = options[:weight] || 10
+    
+    add_std_behaviour FallByGravity, {}
+    add_std_behaviour TileCollisionResponse, {}
+  end
+  
+end

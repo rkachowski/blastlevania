@@ -1,10 +1,8 @@
 <?xml version="1.0"?>
 <room roomname="roomname">
-  <map file="enthall1.tmx"/>
+  <map file="enthall2.tmx"/>
   <parallax>
-    <layer image="p_enthall2.png" damping="1" z="-5" color="4294967295"/>
+    <layer image="p_tree1.png" damping="1" zorder="-5" color="4294967295"/>
   </parallax>
-  <objects>
-    <object type="RoomObjects::Entrance" x="17.0" y="357.0" name=""/>
-  </objects>
+  <objects/>
 </room>
